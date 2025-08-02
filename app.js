@@ -1,6 +1,6 @@
 const fs = require("fs"); // senkron
-let fs1 = require("fs").promises; // JSON dosyasına veri ekleme çıkarma async
-let path = require("path"); // Dosyaları birleştirme
+const fs1 = require("fs").promises; // JSON dosyasına veri ekleme çıkarma async
+const path = require("path"); // Dosyaları birleştirme
 
 const filePath = path.join(__dirname, "users.json"); // json dosyasını buldu
 
