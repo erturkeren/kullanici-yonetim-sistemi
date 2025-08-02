@@ -27,6 +27,11 @@
   {
     "name": "burhan",
     "email": "burhan@gmal.com",
-    "password": "burhantino"
+    "password": "123"
+  },
+  {
+    "name": "EMRE",
+    "email": "emre@gmail.com",
+    "password": "1111"
   }
 ]

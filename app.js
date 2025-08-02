@@ -1,5 +1,6 @@
-let fs = require("fs"); // JSON dosyasına veri ekleme çıkarma
-let path = require("path"); // Dosyaları birleştirme
+const fs = require("fs"); // senkron
+const fs1 = require("fs").promises; // JSON dosyasına veri ekleme çıkarma async
+const path = require("path"); // Dosyaları birleştirme
 
 const filePath = path.join(__dirname, "users.json"); // json dosyasını buldu
 
@@ -11,19 +12,20 @@ function readUsers() {
 }
 
 // Users dizisini yazar
-function writeUsers(users) {
-  fs.writeFileSync(filePath, JSON.stringify(users, null, 2), "utf8");
+async function writeUsers(users) {
+  await fs1.writeFile(filePath, JSON.stringify(users, null, 2), "utf8");
 }
 
 // User ekliyor isim mail şifre şeklinde
-function addUser(name, email, password) {
+async function addUser(name, email, password) {
   const emailkontrol = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // MAİLİ KONTROL EDİYOR @ .COM İÇERSİN
 
   if (!emailkontrol.test(email)) {
     console.log(" Geçerli bir e-posta adresi girin.");
     return;
   }
-
+  email = email.toLowerCase();
+  name = name.toUpperCase();
   let users = readUsers(); // mevcut verileri okuyor
 
   if (users.find((u) => u.email === email)) {
@@ -32,24 +34,26 @@ function addUser(name, email, password) {
     return;
   }
   users.push({ name, email, password });
-  writeUsers(users);
+  await writeUsers(users);
   console.log(" Kullanıcı eklendi.");
 }
 
 // Kullanıcı sil
-function deleteUser(email) {
+async function deleteUser(email) {
+  email = email.toLowerCase();
   let users = readUsers();
-  const newUsers = users.filter((u) => u.email !== email);
+  let newUsers = users.filter((u) => u.email !== email);
   if (users.length === newUsers.length) {
     console.log(" Kullanıcı bulunamadı.");
     return;
   }
-  writeUsers(newUsers);
+  await writeUsers(newUsers);
   console.log(" Kullanıcı silindi.");
 }
 
 // Kullanıcıyı güncelliyor
-function updateUser(email, newName, newPassword) {
+async function updateUser(email, newName, newPassword) {
+  email = email.toLowerCase();
   let users = readUsers();
   const index = users.findIndex((u) => u.email === email);
   if (index === -1) {
@@ -58,7 +62,7 @@ function updateUser(email, newName, newPassword) {
   }
   users[index].name = newName || users[index].name;
   users[index].password = newPassword || users[index].password;
-  writeUsers(users);
+  await writeUsers(users);
   console.log(" Kullanıcı güncellendi.");
 }
 
@@ -71,25 +75,27 @@ function listUsers() {
 
 let [, , command, ...args] = process.argv; // Komutları algılıyor ve args (isim , mail,şifre )
 
-switch (command) {
-  case "add":
-    addUser(args[0], args[1], args[2]);
-    break;
-  case "delete":
-    deleteUser(args[0]);
-    break;
-  case "update":
-    updateUser(args[0], args[1], args[2]);
-    break;
-  case "list":
-    listUsers();
-    break;
-  default:
-    console.log(`
+(async () => {
+  switch (command) {
+    case "add":
+      await addUser(args[0], args[1], args[2]);
+      break;
+    case "delete":
+      await deleteUser(args[0]);
+      break;
+    case "update":
+      await updateUser(args[0], args[1], args[2]);
+      break;
+    case "list":
+      listUsers();
+      break;
+    default:
+      console.log(`
 Kullanımı şöyle :
-  node app add isim-mail-şifre
-  node app delete email
-  node app update mail-yeni_isim-yeni_şifre
-  node app list
+  EKLEMEK       :  node app add   isim  -  mail  -  şifre
+  SİLMEK        :  node app delete   email
+  GÜNCELLEMEK   :  node app update   mail  - yeni_isim  -  yeni_şifre
+  LİSTELEMEK    :  node app  list
 `);
-}
+  }
+})();
